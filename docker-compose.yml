@@ -1,0 +1,48 @@
+services:
+    fetch-api:
+        image: ghcr.io/imputnet/cobalt:10
+        init: true
+        read_only: true
+        restart: unless-stopped
+        container_name: fetch-api
+        ports:
+            - 3001:9000/tcp
+        environment:
+            API_URL: "http://localhost:3001/"
+        volumes:
+            - ./data:/data
+        labels:
+            - com.centurylinklabs.watchtower.scope=cobalt
+    
+    fetch-backend:
+        build: ./backend
+        restart: unless-stopped
+        container_name: fetch-backend
+        ports:
+            - 3002:3000/tcp
+        volumes:
+            - ./data:/app/data
+        depends_on:
+            - fetch-api
+        environment:
+            - COBALT_API_URL=http://fetch-api:9000/
+            - FILE_STORAGE_PATH=/app/data
+            - FILE_EXPIRY_MINUTES=30
+    
+    fetch-frontend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        container_name: fetch-frontend
+        ports:
+            - 3005:80/tcp
+        depends_on:
+            - fetch-backend
+    
+    watchtower:
+        image: ghcr.io/containrrr/watchtower
+        restart: unless-stopped
+        command: --cleanup --scope cobalt --interval 900 --include-restarting
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
