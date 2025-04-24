@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import './App.css'
-import { AlertCircle, CheckCircle, Download } from 'lucide-react'
+import { AlertCircle, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // Types for download state
@@ -260,7 +260,11 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-purple-950 to-slate-950">
+    <div className={`min-h-screen w-full flex flex-col bg-gradient-transition ${
+      downloadState.status === 'processing' ? 'bg-gradient-blue' : 
+      downloadState.status === 'ready' ? 'bg-gradient-green' : 
+      downloadState.status === 'error' ? 'bg-gradient-red' : ''
+    }`}>
       {/* Hidden iframe for download (if needed) */}
       <iframe ref={downloadFrameRef} style={{ display: 'none' }} />
       
@@ -280,17 +284,18 @@ function App() {
                       downloadState.status === 'error' ? handleReset : undefined}
               disabled={downloadState.status === 'processing'}
               className={`w-36 h-36 rounded-xl flex flex-col items-center justify-center text-white font-medium relative overflow-hidden
-                        ${downloadState.status === 'idle' ? 'bg-purple-600' : 
-                          downloadState.status === 'processing' ? 'bg-blue-500' : 
-                          downloadState.status === 'ready' ? 'bg-green-500' : 
-                          downloadState.status === 'error' ? 'bg-red-500' : 'bg-purple-600'}`}
+                        backdrop-blur-md bg-opacity-20 border-2
+                        ${downloadState.status === 'idle' ? 'bg-black/20 border-purple-600' : 
+                          downloadState.status === 'processing' ? 'bg-black/20 border-blue-500' : 
+                          downloadState.status === 'ready' ? 'bg-black/20 border-green-500' : 
+                          downloadState.status === 'error' ? 'bg-black/20 border-red-500' : 'bg-purple-600/20 border-purple-600'}`}
             >
-              {/* Pulsing glow effect */}
+              {/* Glowing border effect */}
               <div className={`absolute inset-0 rounded-xl ${
-                downloadState.status === 'idle' ? 'glow-purple' : 
-                downloadState.status === 'processing' ? 'glow-blue' : 
-                downloadState.status === 'ready' ? 'glow-green' : 
-                downloadState.status === 'error' ? 'glow-red' : 'glow-purple'
+                downloadState.status === 'idle' ? 'glow-border-purple' : 
+                downloadState.status === 'processing' ? 'glow-border-blue' : 
+                downloadState.status === 'ready' ? 'glow-border-green' : 
+                downloadState.status === 'error' ? 'glow-border-red' : 'glow-border-purple'
               }`} />
               
               {/* Content based on state */}
@@ -302,7 +307,7 @@ function App() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.3 }}
-                    className="z-20 text-2xl"
+                    className="z-20 text-2xl font-bold"
                   >
                     Fetch
                   </motion.span>
@@ -331,12 +336,8 @@ function App() {
                     transition={{ duration: 0.3 }}
                     className="flex flex-col items-center justify-center z-20 p-2"
                   >
-                    <CheckCircle className="h-8 w-8 mb-1" />
+                    <Download className="h-8 w-8 mb-1" />
                     <span className="text-sm text-center">Download</span>
-                    <span className="text-xs mt-1 flex items-center">
-                      <Download className="h-3 w-3 mr-1" />
-                      Now
-                    </span>
                   </motion.div>
                 )}
                 
@@ -349,14 +350,8 @@ function App() {
                     transition={{ duration: 0.3 }}
                     className="flex flex-col items-center justify-center z-20 p-2"
                   >
-                    <AlertCircle className="h-8 w-8 mb-1" />
+                    <AlertCircle className="h-8 w-8 mb-2" />
                     <span className="text-xs text-center">{downloadState.error || 'Error'}</span>
-                    <span className="text-xs mt-1 flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      <span className="ml-1">Retry</span>
-                    </span>
                   </motion.div>
                 )}
               </AnimatePresence>
